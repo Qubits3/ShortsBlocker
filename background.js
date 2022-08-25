@@ -1,14 +1,23 @@
+function injectedFunction() {
+    
+    document.onload = function(){
+        alert("loaded!");
+    };
+    
+    new Promise(resolve => setTimeout(resolve, 3000)).then(() => {
+        var shortsButton = Array.prototype.slice.call(document.querySelectorAll("a[title^='Shorts']"));
+        shortsButton.forEach(element => {
+            element.remove();
+        });
+    });
+}
+
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
     if ("url" in changeInfo) {
-        if (changeInfo.url.includes("www.youtube.com/shorts")) {
-            chrome.storage.sync.get(['key'], function (result) {
-                chrome.tabs.update(tabId, { url: result.key });
-            });
-        }
-        else
-        {
-            chrome.storage.sync.set({ key: changeInfo.url });
-        }
+        chrome.scripting.executeScript({
+            target: { tabId: tabId },
+            function: injectedFunction
+        });
     }
 }
 );
